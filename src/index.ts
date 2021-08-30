@@ -152,8 +152,8 @@ app.get("/", (_, res) => res.json({ status: "OK 123" }));
 
 
 // Auth routes for CMS
-//app.get("/auth", CMS.auth);
-//app.get("/callback", CMS.callback);
+app.get("/auth", auth);
+app.get("/callback", callback);
 
 app.listen(PORT, () => {
   console.log(`API listening at http://localhost:${PORT}`);
