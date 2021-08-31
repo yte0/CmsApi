@@ -20,7 +20,7 @@ const app = express();
 
 const redirect_uri =
   process.env.REDIRECT_URI ?? "http://localhost:4000/callback";
-const scope = process.env.SCOPE ?? "";
+const scope = process.env.SCOPE ?? "repo,user";
 const provider = process.env.PROVIDER ?? "github";
 const originPattern = process.env.ORIGIN ?? "";
 
