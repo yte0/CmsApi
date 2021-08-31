@@ -165,7 +165,7 @@ app.get("/", (req, res) => {
   res.send(`<a href="${authUrl}">Login with Github</a>`);
 });
 // Auth routes for CMS
-app.get("/auth", (req, res) => res.redirect(authUrl));
+app.get("/auth", auth);
 app.get("/callback", callback);
 
 app.listen(PORT, () => {
