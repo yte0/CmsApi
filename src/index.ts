@@ -3,9 +3,13 @@ import crypto from "crypto";
 import compression from "compression";
 import helmet from "helmet";
 import cors from "cors";
-
+import tiny from "tiny-json-http";
 
 import { AuthorizationCode } from "simple-oauth2";
+const client_id = process.env.OAUTH_CLIENT_ID;
+const client_secret = process.env.OAUTH_CLIENT_SECRET;
+const authUrl = `https://github.com/login/oauth/authorize?client_id=${client_id}&scope=repo,user`;
+const tokenUrl = "https://github.com/login/oauth/access_token";
 
 
 const PORT = process.env.PORT ?? 4000;
@@ -16,7 +20,7 @@ const redirect_uri =
 const scope = process.env.SCOPE ?? "";
 const provider = process.env.PROVIDER ?? "github";
 const originPattern = process.env.ORIGIN ?? "";
-const authUrl = `https://github.com/login/oauth/authorize?client_id=${process.env.OAUTH_CLIENT_ID}&scope=repo,user`;
+
 
 if ("".match(originPattern)) {
   console.warn(
@@ -64,49 +68,54 @@ export const auth: RequestHandler = (req, res) => {
  * @returns {Express.Response}
  */
 export const callback: RequestHandler = async (req, res) => {
-  const code = req.query.code ? req.query.code.toLocaleString() : ""
-
-
-
-  let mess, content;
+  const data = {
+    code: req.query.code,
+    client_id,
+    client_secret
+  };
 
   try {
-    const { token } = await client.getToken({
-      code,
-      redirect_uri,
-      scope,
+    const { body } = await tiny.post({
+      url: tokenUrl,
+      data,
+      headers: {
+        // GitHub returns a string by default, ask for JSON to make the reponse easier to parse.
+        "Accept": "application/json"
+      }
     });
 
-    mess = "success";
-    content = { token: token.access_token, provider };
-  } catch (e) {
-    mess = "error";
-    content = JSON.stringify(e);
-  }
+    const postMsgContent = {
+      token: body.access_token,
+      provider: "github"
+    };
 
-  const script = `
-      <script nonce="${res.locals.nonce}">
-      (function() {
-        function receiveMessage(e) {
-          console.log("receiveMessage %o", e)
-          if (!e.origin.match(${JSON.stringify(originPattern)})) {
-            console.log('Invalid origin: %s', e.origin);
-            return;
-          }
-          // send message to main window with da app
-          window.opener.postMessage(
-            'authorization:${provider}:${mess}:${JSON.stringify(content)}',
-            e.origin
-          )
-        }
-        window.addEventListener("message", receiveMessage, false)
-        // Start handshake with parent
-        console.log("Sending message: %o", "${provider}")
-        window.opener.postMessage("authorizing:${provider}", "*")
-      })()
-      </script>`;
-  return res.send(script);
-};
+    // This is what talks to the NetlifyCMS page. Using window.postMessage we give it the
+    // token details in a format it's expecting
+    const script = `
+    <script>
+    (function() {
+      function recieveMessage(e) {
+        console.log("recieveMessage %o", e);
+        
+        // send message to main window with the app
+        window.opener.postMessage(
+          'authorization:github:success:${JSON.stringify(postMsgContent)}', 
+          e.origin
+        );
+      }
+      window.addEventListener("message", recieveMessage, false);
+      window.opener.postMessage("authorizing:github", "*");
+    })()
+    </script>`;
+
+    return res.send(script);
+
+  } catch (err) {
+    // If we hit an error we'll handle that here
+    console.log(err);
+    res.redirect("/?error=😡");
+  }
+}
 
 
 
@@ -156,7 +165,7 @@ app.get("/", (req, res) => {
   res.send(`<a href="${authUrl}">Login with Github</a>`);
 });
 // Auth routes for CMS
-app.get("/auth", auth);
+app.get("/auth", (req, res) => res.redirect(authUrl));
 app.get("/callback", callback);
 
 app.listen(PORT, () => {
