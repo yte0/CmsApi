@@ -15,6 +15,16 @@ const tokenUrl = "https://github.com/login/oauth/access_token";
 const PORT = process.env.PORT ?? 4000;
 
 const app = express();
+
+app.use(function (req, res, next) {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; font-src 'self'; img-src 'self'; script-src 'inline-src'; style-src 'self'; frame-src 'self'"
+  );
+  next();
+});
+
+
 const redirect_uri =
   process.env.REDIRECT_URI ?? "http://localhost:4000/callback";
 const scope = process.env.SCOPE ?? "";
