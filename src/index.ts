@@ -16,8 +16,7 @@ const redirect_uri =
 const scope = process.env.SCOPE ?? "";
 const provider = process.env.PROVIDER ?? "github";
 const originPattern = process.env.ORIGIN ?? "";
-console.log(redirect_uri)
-console.log(process.env.OAUTH_CLIENT_ID)
+
 
 if ("".match(originPattern)) {
   console.warn(
@@ -65,11 +64,9 @@ export const auth: RequestHandler = (req, res) => {
  * @returns {Express.Response}
  */
 export const callback: RequestHandler = async (req, res) => {
-  const code = req.query.code;
+  const code = req.query.code ? req.query.code.toLocaleString() : ""
 
-  if (typeof code !== "string") {
-    throw new Error("Invalid code");
-  }
+
 
   let mess, content;
 
