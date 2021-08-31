@@ -16,7 +16,7 @@ const redirect_uri =
 const scope = process.env.SCOPE ?? "";
 const provider = process.env.PROVIDER ?? "github";
 const originPattern = process.env.ORIGIN ?? "";
-
+const authUrl = `https://github.com/login/oauth/authorize?client_id=${process.env.OAUTH_CLIENT_ID}&scope=repo,user`;
 
 if ("".match(originPattern)) {
   console.warn(
@@ -147,9 +147,14 @@ const cache: RequestHandler = (req, res, next) => {
 };
 
 
-app.get("/", (_, res) => res.json({ status: "OK 123" }));
+//app.get("/", (_, res) => res.json({ status: "OK 123" }));
 
 
+
+
+app.get("/", (req, res) => {
+  res.send(`<a href="${authUrl}">Login with Github</a>`);
+});
 // Auth routes for CMS
 app.get("/auth", auth);
 app.get("/callback", callback);
