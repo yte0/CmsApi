@@ -8,9 +8,8 @@ import tiny from "tiny-json-http";
 import { AuthorizationCode } from "simple-oauth2";
 
 const client_id = process.env.OAUTH_CLIENT_ID;
-const client_secret = process.env.OAUTH_CLIENT_SECRET;
+
 const authUrl = `https://github.com/login/oauth/authorize?client_id=${client_id}&scope=repo,user`;
-const tokenUrl = "https://github.com/login/oauth/access_token";
 
 
 const PORT = process.env.PORT ?? 4000;
@@ -59,7 +58,7 @@ export const auth: RequestHandler = (req, res) => {
     scope,
     state: crypto.randomBytes(16).toString("hex"),
   });
-
+  console.log(authorizeUri)
   res.redirect(authorizeUri);
 };
 
