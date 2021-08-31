@@ -16,6 +16,8 @@ const redirect_uri =
 const scope = process.env.SCOPE ?? "";
 const provider = process.env.PROVIDER ?? "github";
 const originPattern = process.env.ORIGIN ?? "";
+console.log(redirect_uri)
+console.log(process.env.OAUTH_CLIENT_ID)
 
 if ("".match(originPattern)) {
   console.warn(
