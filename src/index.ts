@@ -19,7 +19,7 @@ const app = express();
 app.use(function (req, res, next) {
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; font-src 'self'; img-src 'self'; script-src 'inline-src'; style-src 'self'; frame-src 'self'"
+    "default-src 'self'; font-src 'self'; img-src 'self'; script-src 'unsafe-inline'; style-src 'self'; frame-src 'self'"
   );
   next();
 });
