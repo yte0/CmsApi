@@ -62,6 +62,29 @@ export const auth: RequestHandler = (req, res) => {
   res.redirect(authorizeUri);
 };
 
+
+app.use((req, res, next) => {
+  res.locals.nonce = crypto.randomBytes(16).toString("hex");
+  next();
+});
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        // @ts-expect-error res is of class ServerResponse from http module not express Response. Havent found a way to extend ServerResponse
+        "script-src": ["'self'", (req, res) => `'nonce-${res.locals.nonce}'`],
+      },
+    },
+  })
+);
+
+
+
+
+
+
 /**
  * Fetches token from provider and emulates NetlifyCMS authentication script
  *
@@ -118,22 +141,7 @@ export const callback: RequestHandler = async (req, res) => {
 
 //app.get("/", (_, res) => res.json({ status: "OK 123" }));
 
-app.use((req, res, next) => {
-  res.locals.nonce = crypto.randomBytes(16).toString("hex");
-  next();
-});
 
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      useDefaults: true,
-      directives: {
-        // @ts-expect-error res is of class ServerResponse from http module not express Response. Havent found a way to extend ServerResponse
-        "script-src": ["'self'", (req, res) => `'nonce-${res.locals.nonce}'`],
-      },
-    },
-  })
-);
 app.use(cors());
 app.use(
   compression({
