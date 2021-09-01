@@ -3,23 +3,18 @@ import crypto from "crypto";
 import compression from "compression";
 import helmet from "helmet";
 import cors from "cors";
-import tiny from "tiny-json-http";
+
 
 import { AuthorizationCode } from "simple-oauth2";
-
-const client_id = process.env.OAUTH_CLIENT_ID;
-
-const authUrl = `https://github.com/login/oauth/authorize?client_id=${client_id}&scope=repo,user`;
-
 
 const PORT = process.env.PORT ?? 4000;
 
 const app = express();
 
 
-const redirect_uri =
-  process.env.REDIRECT_URI ?? "http://localhost:4000/callback";
-const scope = process.env.SCOPE ?? "repo,user";
+const redirect_uri = "http://localhost:4000/callback"
+//process.env.REDIRECT_URI ?? "http://localhost:4000/callback";
+const scope = process.env.SCOPE ?? "";
 const provider = process.env.PROVIDER ?? "github";
 const originPattern = process.env.ORIGIN ?? "";
 
@@ -93,10 +88,12 @@ app.use(
  * @returns {Express.Response}
  */
 export const callback: RequestHandler = async (req, res) => {
-  const code = req.query.code;
+  const code = req.query.code ? req.query.code.toLocaleString() : undefined;
+  console.log("##### CODE #####")
+  console.log(code)
 
-  if (typeof code !== "string") {
-    throw new Error("Invalid code");
+  if (!code) {
+    throw new Error("code undefined");
   }
 
   let mess, content;
@@ -114,7 +111,8 @@ export const callback: RequestHandler = async (req, res) => {
     mess = "error";
     content = JSON.stringify(e);
   }
-
+  console.log("##### CONTENT #####")
+  console.log(content)
   const script = `
       <script nonce="${res.locals.nonce}">
       (function() {
@@ -136,6 +134,8 @@ export const callback: RequestHandler = async (req, res) => {
         window.opener.postMessage("authorizing:${provider}", "*")
       })()
       </script>`;
+  console.log("##### SCRIPT #####")
+  console.log(script)
   return res.send(script);
 };
 
@@ -154,7 +154,7 @@ app.use(express.json());
 
 
 app.get("/", (req, res) => {
-  res.send(`<a href="${authUrl}">Login with Github</a>`);
+  res.send(`<a href="http://localhost:4000/auth" target="_blank">Login with Github</a>`);
 });
 // Auth routes for CMS
 app.get("/auth", auth);
