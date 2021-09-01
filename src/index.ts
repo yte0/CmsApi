@@ -153,7 +153,7 @@ app.use(express.json());
 
 
 app.get("/", (req, res) => {
-  res.send(`<a href="http://localhost:4000/auth" target="_blank">Login with Github</a>`);
+  res.send(`<a href="https://cmsapitest1.herokuapp.com/auth" target="_blank">Login with Github</a>`);
 });
 // Auth routes for CMS
 app.get("/auth", auth);
