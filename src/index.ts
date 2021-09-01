@@ -12,8 +12,7 @@ const PORT = process.env.PORT ?? 4000;
 const app = express();
 
 
-const redirect_uri = "http://localhost:4000/callback"
-//process.env.REDIRECT_URI ?? "http://localhost:4000/callback";
+const redirect_uri = process.env.REDIRECT_URI ?? "http://localhost:4000/callback";
 const scope = process.env.SCOPE ?? "";
 const provider = process.env.PROVIDER ?? "github";
 const originPattern = process.env.ORIGIN ?? "";
